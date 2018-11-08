@@ -155,7 +155,6 @@ public class MusicScoreView2 extends View {
                         y += defaultNoteHeight;
                     }
                     x += width;
-                    Log.d(TAG, "onDraw: x =" + x + ",getwidth = " + getWidth());
                 } else {
                     width = defaultNoteWidth;
                     if (x + width > getWidth()) {
@@ -163,7 +162,6 @@ public class MusicScoreView2 extends View {
                         y += defaultNoteHeight;
                     }
                     x += width;
-                    Log.d(TAG, "onDraw: x =" + x + ",getwidth = " + getWidth());
                 }
             }
 

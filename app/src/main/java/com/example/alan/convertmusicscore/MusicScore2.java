@@ -34,7 +34,6 @@ public class MusicScore2 {
         return track;
     }
 
-    //todo  改成位操作，对于一首歌，这里生成了太多的对象了，比如example,生成了983个对象，差不多有2M大小
     @Nullable
     public static MusicScore2 convertToStandard(String name, String track, String str) {
         try {
