@@ -1,6 +1,6 @@
 package com.example.alan.convertmusicscore;
 
-public class MusicNote2 {
+public class MusicNote {
 
     public static final int NUMBER_BITS = ~7; // 表示音符值的3个bit位, 0x 111...11000
     public static final int LEVEL_BITS = (NUMBER_BITS << 3) | 7; //  表示音级的3个bit位，0x 111...11000111

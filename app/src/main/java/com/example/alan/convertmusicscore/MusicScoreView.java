@@ -1,17 +1,23 @@
 package com.example.alan.convertmusicscore;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.Environment;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 import androidx.annotation.Nullable;
 
-public class MusicScoreView2 extends View {
+public class MusicScoreView extends View {
     /**
      * 不带变化音级标记的字符宽度
      */
@@ -24,7 +30,8 @@ public class MusicScoreView2 extends View {
      * 音符的长度(包括 高音 低音标记)
      */
     private int defaultNoteHeight;
-    private MusicScore2 data;
+
+    private MusicScore data;
     /**
      * 音符的画笔
      */
@@ -50,12 +57,12 @@ public class MusicScoreView2 extends View {
      */
     private int changeTextSize;
 
-    public MusicScoreView2(Context context, MusicScore2 musicScore) {
+    public MusicScoreView(Context context, MusicScore musicScore) {
         super(context);
         init(musicScore);
     }
 
-    private void init(MusicScore2 musicScore) {
+    private void init(MusicScore musicScore) {
         data = musicScore;
         textPaint.setColor(Color.BLACK);
         textPaint.setTextAlign(Paint.Align.CENTER);
@@ -77,17 +84,17 @@ public class MusicScoreView2 extends View {
         changePaint.setTextSize(changeTextSize);
     }
 
-    public MusicScoreView2(Context context, @Nullable AttributeSet attrs) {
+    public MusicScoreView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init(null);
     }
 
-    public MusicScoreView2(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public MusicScoreView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(null);
     }
 
-    public MusicScoreView2(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public MusicScoreView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         init(null);
     }
@@ -103,12 +110,12 @@ public class MusicScoreView2 extends View {
         int x = 0, y = defaultNoteHeight + mHeaderHeight;
         for (int i = 0; i < data.getNotesLen(); i++) {
             int note = data.getMusicNotes()[i];
-            if (MusicNote2.isNextLineMark(note)) {
+            if (MusicNote.isNextLineMark(note)) {
                 maxWidth = x > maxWidth ? x : maxWidth;
                 x = 0;
                 y += defaultNoteHeight;
             } else {
-                if (MusicNote2.getChange(note) == MusicNote2.STANDARD) {
+                if (MusicNote.getChange(note) == MusicNote.STANDARD) {
                     if (x + defaultNoteWidth2 > widthSize) {
                         x = 0;
                         y += defaultNoteHeight;
@@ -124,8 +131,7 @@ public class MusicScoreView2 extends View {
             }
         }
         mWidth = maxWidth;
-//        Log.i(TAG, "onMeasure 最后一条y坐标: " + y);
-        mHeight = y + mHeaderHeight; // ???
+        mHeight = y + mHeaderHeight; // 不加的话会导致最下面两条不显示出来
 
         setMeasuredDimension(widthSize, mHeight);
     }
@@ -137,18 +143,18 @@ public class MusicScoreView2 extends View {
         super.onDraw(canvas);
 
         canvas.drawText(data.getTitle(), getWidth() / 2, defaultNoteHeight, textPaint);
-        canvas.drawText(data.getAuthor(), getWidth() * 3 / 4, defaultNoteHeight * 3 / 2, textPaint);
-        canvas.drawText(data.getTrack(), 100, defaultNoteHeight * 3 / 2, textPaint);
+        canvas.drawText("作者：" + data.getAuthor(), getWidth() * 3 / 4, defaultNoteHeight * 5 / 3, textPaint);
+        canvas.drawText("主调：" + data.getHomophony(), 100, defaultNoteHeight * 5 / 3, textPaint);
 
         int x = changeTextSize / 2, y = defaultNoteHeight + mHeaderHeight;
         for (int i = 0; i < data.getNotesLen(); i++) {
             int note = data.getMusicNotes()[i];
             int width = 0;
-            if (MusicNote2.isNextLineMark(note)) {
+            if (MusicNote.isNextLineMark(note)) {
                 x = changeTextSize / 2;
                 y += defaultNoteHeight;
             } else {
-                if (MusicNote2.getChange(note) == MusicNote2.STANDARD) {
+                if (MusicNote.getChange(note) == MusicNote.STANDARD) {
                     width = defaultNoteWidth2;
                     if (x + width > getWidth()) {
                         x = changeTextSize / 2;
@@ -165,19 +171,23 @@ public class MusicScoreView2 extends View {
                 }
             }
 
-            if (!MusicNote2.isNextLineMark(note) && !MusicNote2.isBlankMark(note)) {
-                canvas.drawText(String.valueOf(MusicNote2.getNumber(note)), x - width / 2, y + defaultNoteHeight / 2, textPaint);
-                if (MusicNote2.getLevel(note) == 1) {
+            if (!MusicNote.isNextLineMark(note) && !MusicNote.isBlankMark(note)) {
+                canvas.drawText(String.valueOf(MusicNote.getNumber(note)), x - width / 2, y + defaultNoteHeight / 2, textPaint);
+                if (MusicNote.getLevel(note) == 1) {
                     canvas.drawCircle(x - width / 2, y + defaultNoteHeight / 2 + fontMetrics.top, 1, pointPaint);
-                } else if (MusicNote2.getLevel(note) == -1) {
+                } else if (MusicNote.getLevel(note) == -1) {
                     canvas.drawCircle(x - width / 2, y + defaultNoteHeight / 2 + fontMetrics.bottom, 1, pointPaint);
                 }
-                if (MusicNote2.getChange(note) == MusicNote2.DOWN) {
+                if (MusicNote.getChange(note) == MusicNote.DOWN) {
                     canvas.drawText("b", x - width, y + defaultNoteHeight / 4, changePaint);
-                } else if (MusicNote2.getChange(note) == MusicNote2.UP) {
+                } else if (MusicNote.getChange(note) == MusicNote.UP) {
                     canvas.drawText("#", x - width, y + defaultNoteHeight / 4, changePaint);
                 }
             }
         }
+    }
+
+    public MusicScore getData() {
+        return data;
     }
 }

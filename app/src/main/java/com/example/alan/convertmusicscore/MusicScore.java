@@ -1,15 +1,17 @@
 package com.example.alan.convertmusicscore;
 
-import java.io.File;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 //乐曲
-public class MusicScore2 {
+public class MusicScore {
     static final int half = 100;
     static final int full = 200;
-    private String track = "C";
+
+    /**
+     * 主调
+     */
+    private String homophony;
     static final int[] interval = {full, full, half, full, full, full, half};
 //    static final int[] number = {1, 2, 3, 4, 5, 6, 7};
 
@@ -19,23 +21,23 @@ public class MusicScore2 {
     int[] musicNotes;
     int notesLen;
 
-    private MusicScore2() {
+    private MusicScore() {
 
     }
 
-    private MusicScore2(String title, String track, int[] temp, int len) {
-        this.title = title;
-        this.track = track;
+    private MusicScore(String title, String homophony, int[] temp, int len) {
+        this.title = title == null ? "" : title;
+        this.homophony = homophony == null ? "" : homophony;
         musicNotes = temp;
         notesLen = len;
     }
 
-    public String getTrack() {
-        return track;
+    public String getHomophony() {
+        return homophony;
     }
 
     @Nullable
-    public static MusicScore2 convertToStandard(String name, String track, String str) {
+    public static MusicScore convertToStandard(String name, String homophony, String str) {
         try {
             char[] chars = str.toCharArray();
             int[] temp = new int[str.length()];
@@ -50,18 +52,18 @@ public class MusicScore2 {
                     } else {
                         level -= 1;
                     }
-                    value = MusicNote2.setLevel(value, level);
+                    value = MusicNote.setLevel(value, level);
                     i++;
                     if (chars[i] == '#') {
                         i++;
-                        value = MusicNote2.setChange(value, MusicNote2.UP);
-                        value = MusicNote2.setNumber(value, Character.digit(chars[i], 10));
+                        value = MusicNote.setChange(value, MusicNote.UP);
+                        value = MusicNote.setNumber(value, Character.digit(chars[i], 10));
                     } else if (chars[i] == 'b') {
                         i++;
-                        value = MusicNote2.setChange(value, MusicNote2.DOWN);
-                        value = MusicNote2.setNumber(value, Character.digit(chars[i], 10));
+                        value = MusicNote.setChange(value, MusicNote.DOWN);
+                        value = MusicNote.setNumber(value, Character.digit(chars[i], 10));
                     } else if (chars[i] > '0' && chars[i] < '8') {
-                        value = MusicNote2.setNumber(value, Character.digit(chars[i], 10));
+                        value = MusicNote.setNumber(value, Character.digit(chars[i], 10));
                     } else {
                         throw new IllegalArgumentException("error input in line " + line);
                     }
@@ -71,20 +73,20 @@ public class MusicScore2 {
                     int value = 0;
                     if (chars[i] == '#') {
                         i++;
-                        value = MusicNote2.setChange(value, MusicNote2.UP);
-                        value = MusicNote2.setNumber(value, Character.digit(chars[i], 10));
+                        value = MusicNote.setChange(value, MusicNote.UP);
+                        value = MusicNote.setNumber(value, Character.digit(chars[i], 10));
                     } else if (chars[i] == 'b') {
                         i++;
-                        value = MusicNote2.setChange(value, MusicNote2.DOWN);
-                        value = MusicNote2.setNumber(value, Character.digit(chars[i], 10));
+                        value = MusicNote.setChange(value, MusicNote.DOWN);
+                        value = MusicNote.setNumber(value, Character.digit(chars[i], 10));
                     } else if (chars[i] > '0' && chars[i] < '8') {
-                        value = MusicNote2.setNumber(value, Character.digit(chars[i], 10));
+                        value = MusicNote.setNumber(value, Character.digit(chars[i], 10));
                     } else {
                         throw new IllegalArgumentException("error input in line " + line);
                     }
                     temp[len] = value;
                 } else if (chars[i] > '0' && chars[i] < '8') {
-                    int value = MusicNote2.setNumber(0, Character.digit(chars[i], 10));
+                    int value = MusicNote.setNumber(0, Character.digit(chars[i], 10));
                     temp[len] = value;
                 } else if (chars[i] == ' ') {
                     temp[len] = -1;
@@ -95,7 +97,7 @@ public class MusicScore2 {
                     throw new IllegalArgumentException("error input in line " + line + ",value = " + String.valueOf(chars[i]));
                 }
             }
-            return new MusicScore2(name, track, temp, len);
+            return new MusicScore(name, homophony, temp, len);
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
         }
@@ -109,7 +111,7 @@ public class MusicScore2 {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < notesLen; i++) {
-            builder.append(MusicNote2.toString(musicNotes[i]));
+            builder.append(MusicNote.toString(musicNotes[i]));
         }
         return builder.toString();
     }
@@ -129,15 +131,5 @@ public class MusicScore2 {
     public int getNotesLen() {
         return notesLen;
 
-    }
-
-    public void writeFileToInternalDirs() {
-    }
-
-    public void writeFileToSDCards() {
-    }
-
-    public static MusicScore2 readFromFile(File file) {
-        return null;
     }
 }

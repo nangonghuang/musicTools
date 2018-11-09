@@ -72,7 +72,6 @@ public class MainActivity extends AppCompatActivity {
             "7#6#4 #4#5#5 #5#5#6#6 #6#677 #5#5#67[#1]#6#4[#1][#4][3][3][#2]\n" +
             "7#6#4 #4#5#5 #4#4#5#5 #4#4#5#5 #5#5#67[#1]#5 #5#67[#1]#6#4#2#4 #4#5#5\n" +
             "7#6#4#2#4 #4#5#5";
-    private EditText editText;
     private String test =
             "1\n" + "\n" +
                     "[2](2)(#2)(b2)[#2][b2]2\n" + "\n" +
@@ -85,25 +84,32 @@ public class MainActivity extends AppCompatActivity {
                     "6\n" + "\n" +
                     "6\n" + "\n" +
                     "7\n";
+    private EditText et_content;
+    private EditText et_title;
+    private EditText et_key;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        editText = findViewById(R.id.music_score_text);
+        et_content = findViewById(R.id.music_score_content);
+        et_title = findViewById(R.id.music_score_title);
+        et_key = findViewById(R.id.music_score_key);
+
+        et_content.setText(example);
+        et_title.setText("Only my Railgun");
+        et_key.setText("C");
 
         FloatingActionButton fab = findViewById(R.id.convert_btn);
         fab.setOnClickListener(
                 (v) -> {
-                    Intent intent = new Intent(this, Main2Activity.class);
-                    intent.putExtra("music",example);
+                    Intent intent = new Intent(this, MusicScoreActivity.class);
+                    intent.putExtra("content", et_content.getText().toString());
+                    intent.putExtra("title", et_title.getText().toString());
+                    intent.putExtra("key", et_key.getText().toString());
                     startActivity(intent);
                 });
-
-
-//        MusicNoteView view = new MusicNoteView(this,new MusicNote(3));
-//        ((ViewGroup)findViewById(R.id.note_container)).addView(view);
     }
 
     private static final String TAG = "MainActivity";
