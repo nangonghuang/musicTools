@@ -6,11 +6,11 @@
         android:orderInCategory="80"
         android:title="保存成图片"
         app:showAsAction="never" />
-    <!--<item-->
-        <!--android:id="@+id/menu_2"-->
-        <!--android:orderInCategory="80"-->
-        <!--android:title="我是第二个"-->
-        <!--app:showAsAction="never" />-->
+    <item
+        android:id="@+id/menu_2"
+        android:orderInCategory="80"
+        android:title="保存到本地"
+        app:showAsAction="never" />
     <!--<item-->
         <!--android:id="@+id/menu_3"-->
         <!--android:orderInCategory="80"-->

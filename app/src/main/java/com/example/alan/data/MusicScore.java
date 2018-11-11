@@ -1,35 +1,83 @@
-package com.example.alan.convertmusicscore;
+package com.example.alan.data;
+
+import android.util.Log;
+
+import org.greenrobot.greendao.annotation.Entity;
+import org.greenrobot.greendao.annotation.Id;
+import org.greenrobot.greendao.annotation.Keep;
+import org.greenrobot.greendao.annotation.Transient;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.greenrobot.greendao.annotation.Generated;
+
 //乐曲
+@Entity
 public class MusicScore {
     static final int half = 100;
     static final int full = 200;
+    static final int[] interval = {full, full, half, full, full, full, half};
 
+    @Id(autoincrement = true)
+    private Long id;
     /**
      * 主调
      */
     private String homophony;
-    static final int[] interval = {full, full, half, full, full, full, half};
 //    static final int[] number = {1, 2, 3, 4, 5, 6, 7};
 
-    String title;
+    String title ;
     String author = "unknown";
     String desc;
+
+    @Transient
     int[] musicNotes;
+
+    String content;
+
     int notesLen;
-
-    private MusicScore() {
-
-    }
 
     private MusicScore(String title, String homophony, int[] temp, int len) {
         this.title = title == null ? "" : title;
         this.homophony = homophony == null ? "" : homophony;
         musicNotes = temp;
         notesLen = len;
+        content = writeMusicNotesString();
+    }
+
+    @Generated(hash = 192322349)
+    public MusicScore(Long id, String homophony, String title, String author, String desc, String content, int notesLen) {
+        this.id = id;
+        this.homophony = homophony;
+        this.title = title;
+        this.author = author;
+        this.desc = desc;
+        this.content = content;
+        this.notesLen = notesLen;
+    }
+
+    @Generated(hash = 733556080)
+    public MusicScore() {
+    }
+
+    public String writeMusicNotesString() {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < notesLen; i++) {
+            builder.append(musicNotes[i]);
+            builder.append(",");
+        }
+        builder = builder.deleteCharAt(builder.length()-1);
+        return builder.toString();
+    }
+
+    public void readMusicNotesString() {
+        String[] split = content.split(",");
+        Log.i(TAG, "readMusicNotesString: " + content);
+        musicNotes = new int[split.length];
+        for (int i = 0; i < split.length; i++) {
+            musicNotes[i] = Integer.valueOf(split[i]);
+        }
     }
 
     public String getHomophony() {
@@ -110,13 +158,18 @@ public class MusicScore {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < notesLen; i++) {
-            builder.append(MusicNote.toString(musicNotes[i]));
-        }
+        builder.append("title:" + this.title + "\n");
+        builder.append("author:" + this.author + "\n");
+        builder.append("desc:" + this.desc + "\n");
+        builder.append("homophony:" + this.homophony + "\n");
+        builder.append("content:" + this.content + "\n");
         return builder.toString();
     }
 
     public int[] getMusicNotes() {
+        if(musicNotes == null){
+            readMusicNotesString();
+        }
         return musicNotes;
     }
 
@@ -131,5 +184,45 @@ public class MusicScore {
     public int getNotesLen() {
         return notesLen;
 
+    }
+
+    public Long getId() {
+        return this.id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setHomophony(String homophony) {
+        this.homophony = homophony;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public String getDesc() {
+        return this.desc;
+    }
+
+    public void setDesc(String desc) {
+        this.desc = desc;
+    }
+
+    public String getContent() {
+        return this.content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public void setNotesLen(int notesLen) {
+        this.notesLen = notesLen;
     }
 }

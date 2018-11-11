@@ -18,7 +18,14 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.example.alan.data.GreenDao;
+import com.example.alan.data.MusicScore;
+import com.example.alan.db.gen.MusicScoreDao;
+import com.example.alan.myview.MusicScoreView;
+import com.example.alan.utils.BitmapUtils;
+
 import java.io.IOException;
+import java.util.List;
 
 public class MusicScoreActivity extends AppCompatActivity {
     private static final String TAG = "MusicScoreActivity";
@@ -84,19 +91,34 @@ public class MusicScoreActivity extends AppCompatActivity {
         int id = item.getItemId();
         switch (id) {
             case R.id.menu_1:
-                Bitmap bitmap = BitmapUtils.loadBitmapFromView(musicScoreView);
-                try {
-                    BitmapUtils.saveBitmapToSDcard(bitmap, musicScoreView.getData().getTitle());
-                    Toast.makeText(this, "保存成功", Toast.LENGTH_SHORT).show();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Toast.makeText(this, "保存失败", Toast.LENGTH_SHORT).show();
-                }
+                saveAsPicture();
+                break;
+            case R.id.menu_2:
+                saveToDB();
                 break;
             default:
                 finish();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void saveToDB() {
+        MusicScoreDao musicScoreDao = GreenDao.getInstance().getDaoSession().getMusicScoreDao();
+        if (musicScoreView != null) {
+            MusicScore data = musicScoreView.getData();
+            musicScoreDao.save(data);
+        }
+    }
+
+    private void saveAsPicture() {
+        Bitmap bitmap = BitmapUtils.loadBitmapFromView(musicScoreView);
+        try {
+            BitmapUtils.saveBitmapToSDcard(bitmap, musicScoreView.getData().getTitle());
+            Toast.makeText(this, "保存成功", Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "保存失败", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private class MusicScoreAsyncTask extends AsyncTask<String, Void, MusicScore> {

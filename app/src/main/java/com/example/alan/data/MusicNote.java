@@ -1,4 +1,4 @@
-package com.example.alan.convertmusicscore;
+package com.example.alan.data;
 
 public class MusicNote {
 
