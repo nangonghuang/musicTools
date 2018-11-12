@@ -12,9 +12,12 @@ import androidx.annotation.Nullable;
 
 import org.greenrobot.greendao.annotation.Generated;
 
+import java.io.Serializable;
+
 //乐曲
 @Entity
-public class MusicScore {
+public class MusicScore implements Serializable {
+    static final long serialVersionUID = 1L;
     static final int half = 100;
     static final int full = 200;
     static final int[] interval = {full, full, half, full, full, full, half};
@@ -27,7 +30,7 @@ public class MusicScore {
     private String homophony;
 //    static final int[] number = {1, 2, 3, 4, 5, 6, 7};
 
-    String title ;
+    String title;
     String author = "unknown";
     String desc;
 
@@ -67,7 +70,7 @@ public class MusicScore {
             builder.append(musicNotes[i]);
             builder.append(",");
         }
-        builder = builder.deleteCharAt(builder.length()-1);
+        builder = builder.deleteCharAt(builder.length() - 1);
         return builder.toString();
     }
 
@@ -85,10 +88,10 @@ public class MusicScore {
     }
 
     @Nullable
-    public static MusicScore convertToStandard(String name, String homophony, String str) {
+    public static MusicScore convertToStandard(String name, String homophony, String content) {
         try {
-            char[] chars = str.toCharArray();
-            int[] temp = new int[str.length()];
+            char[] chars = content.toCharArray();
+            int[] temp = new int[content.length()];
             int line = 1;
             int len = 0;
             for (int i = 0; i < chars.length; i++, len++) {
@@ -167,7 +170,7 @@ public class MusicScore {
     }
 
     public int[] getMusicNotes() {
-        if(musicNotes == null){
+        if (musicNotes == null) {
             readMusicNotesString();
         }
         return musicNotes;
@@ -224,5 +227,16 @@ public class MusicScore {
 
     public void setNotesLen(int notesLen) {
         this.notesLen = notesLen;
+    }
+
+    public MusicScore copyFrom(MusicScore score) {
+        this.homophony = score.getHomophony();
+        this.title = score.getTitle();
+        this.author = score.getAuthor();
+        this.desc = score.getDesc();
+        this.content = score.getContent();
+        this.notesLen = score.getNotesLen();
+        this.musicNotes = score.getMusicNotes();
+        return this;
     }
 }

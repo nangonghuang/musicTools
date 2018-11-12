@@ -1,9 +1,15 @@
 package com.example.alan.convertmusicscore;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Log;
 import android.widget.EditText;
+import android.widget.Toast;
 
+import com.example.alan.data.MusicScore;
+import com.example.alan.myview.MusicScoreView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -87,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText et_content;
     private EditText et_title;
     private EditText et_key;
+    private MusicScoreAsyncTask convert;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,13 +111,48 @@ public class MainActivity extends AppCompatActivity {
         FloatingActionButton fab = findViewById(R.id.convert_btn);
         fab.setOnClickListener(
                 (v) -> {
-                    Intent intent = new Intent(this, MusicScoreActivity.class);
-                    intent.putExtra("content", et_content.getText().toString());
-                    intent.putExtra("title", et_title.getText().toString());
-                    intent.putExtra("key", et_key.getText().toString());
-                    startActivity(intent);
+                    convert = new MusicScoreAsyncTask();
+                    convert.execute();
                 });
     }
 
     private static final String TAG = "MainActivity";
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (convert != null && convert.getStatus() != AsyncTask.Status.FINISHED) {
+            convert.cancel(true);
+        }
+    }
+
+    private class MusicScoreAsyncTask extends AsyncTask<String, Void, MusicScore> {
+        private String content;
+        private String title;
+        private String key;
+
+        @Override
+        protected void onPreExecute() {
+            content = et_content.getText().toString();
+            title = et_title.getText().toString();
+            key = et_key.getText().toString();
+            if (TextUtils.isEmpty(content)) {
+                Toast.makeText(MainActivity.this, "内容不能为空", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        @Override
+        protected MusicScore doInBackground(String... strings) {
+            MusicScore musicScore = MusicScore.convertToStandard(title, key,content);
+            return musicScore;
+        }
+
+        @Override
+        protected void onPostExecute(MusicScore musicScore) {
+            if (MainActivity.this.isFinishing()) {
+                return;
+            }
+            MusicScoreActivity.startActivity(MainActivity.this, musicScore);
+        }
+    }
 }

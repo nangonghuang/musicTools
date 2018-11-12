@@ -18,6 +18,5 @@ public class MusicApplication extends Application {
         super.onCreate();
 
         GreenDao.getInstance().init(this);
-        GreenDao.getInstance().clear();
     }
 }

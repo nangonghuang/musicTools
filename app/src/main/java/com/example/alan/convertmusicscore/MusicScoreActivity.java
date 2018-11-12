@@ -7,9 +7,10 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -31,27 +32,25 @@ public class MusicScoreActivity extends AppCompatActivity {
     private static final String TAG = "MusicScoreActivity";
     private static final int REQUEST_WRITE = 1;
     private MusicScoreView musicScoreView;
-    private AsyncTask<String, Void, MusicScore> asyncTask;
-    private ViewGroup scrollView;
+    private MusicScore musicScore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_musicscore);
-        String content = getIntent().getStringExtra("content");
-        String title = getIntent().getStringExtra("title");
-        String key = getIntent().getStringExtra("key");
+        musicScore = (MusicScore) getIntent().getSerializableExtra("musicScore");
+        Log.i(TAG, "onCreate: " + musicScore.toString());
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle(title);
+        getSupportActionBar().setTitle(musicScore.getTitle());
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
 
-        scrollView = findViewById(R.id.music_score_container);
-        asyncTask = new MusicScoreAsyncTask();
-        asyncTask.execute(title, key, content);
+        ViewGroup scrollView = findViewById(R.id.music_score_container);
+        musicScoreView = new MusicScoreView(this, musicScore);
+        scrollView.addView(musicScoreView);
 
         if (Build.VERSION.SDK_INT >= 23) {
             if (ContextCompat.checkSelfPermission(this,
@@ -69,14 +68,6 @@ public class MusicScoreActivity extends AppCompatActivity {
 
         } else {
             Toast.makeText(this, "请求读写sd卡失败，将无法保存成图片到sd卡", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (asyncTask.getStatus() != AsyncTask.Status.FINISHED) {
-            asyncTask.cancel(true);
         }
     }
 
@@ -106,7 +97,16 @@ public class MusicScoreActivity extends AppCompatActivity {
         MusicScoreDao musicScoreDao = GreenDao.getInstance().getDaoSession().getMusicScoreDao();
         if (musicScoreView != null) {
             MusicScore data = musicScoreView.getData();
-            musicScoreDao.save(data);
+            List<MusicScore> list = musicScoreDao.queryBuilder().where(MusicScoreDao.Properties.Title.eq(data.getTitle()),
+                    MusicScoreDao.Properties.Author.eq(data.getAuthor()))
+                    .list();
+            if (list.size() == 0) {
+                musicScoreDao.insert(data);
+            } else {
+                MusicScore score = list.get(0);
+                musicScoreDao.save(score.copyFrom(data));
+            }
+            Toast.makeText(this, "保存成功", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -121,18 +121,9 @@ public class MusicScoreActivity extends AppCompatActivity {
         }
     }
 
-    private class MusicScoreAsyncTask extends AsyncTask<String, Void, MusicScore> {
-
-        @Override
-        protected MusicScore doInBackground(String... strings) {
-            MusicScore musicScore = MusicScore.convertToStandard(strings[0], strings[1], strings[2]);
-            return musicScore;
-        }
-
-        @Override
-        protected void onPostExecute(MusicScore musicScore) {
-            musicScoreView = new MusicScoreView(MusicScoreActivity.this, musicScore);
-            scrollView.addView(musicScoreView);
-        }
+    public static void startActivity(Context context, MusicScore score) {
+        Intent intent = new Intent(context, MusicScoreActivity.class);
+        intent.putExtra("musicScore", score);
+        context.startActivity(intent);
     }
 }
