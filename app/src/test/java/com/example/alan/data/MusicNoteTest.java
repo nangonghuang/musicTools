@@ -1,4 +1,4 @@
-package com.example.alan.convertmusicscore;
+package com.example.alan.data;
 
 import com.example.alan.data.MusicNote;
 

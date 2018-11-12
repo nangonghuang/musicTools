@@ -1,15 +1,12 @@
 package com.example.alan.convertmusicscore;
 
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.alan.data.MusicScore;
-import com.example.alan.myview.MusicScoreView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -143,13 +140,17 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected MusicScore doInBackground(String... strings) {
-            MusicScore musicScore = MusicScore.convertToStandard(title, key,content);
+            MusicScore musicScore = MusicScore.convertToObj(title, key, content);
             return musicScore;
         }
 
         @Override
         protected void onPostExecute(MusicScore musicScore) {
             if (MainActivity.this.isFinishing()) {
+                return;
+            }
+            if (musicScore == null) {
+                Toast.makeText(MainActivity.this, "转换失败", Toast.LENGTH_SHORT).show();
                 return;
             }
             MusicScoreActivity.startActivity(MainActivity.this, musicScore);

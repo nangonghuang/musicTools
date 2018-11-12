@@ -13,6 +13,8 @@ import androidx.annotation.Nullable;
 import org.greenrobot.greendao.annotation.Generated;
 
 import java.io.Serializable;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 //乐曲
 @Entity
@@ -76,7 +78,6 @@ public class MusicScore implements Serializable {
 
     public void readMusicNotesString() {
         String[] split = content.split(",");
-        Log.i(TAG, "readMusicNotesString: " + content);
         musicNotes = new int[split.length];
         for (int i = 0; i < split.length; i++) {
             musicNotes[i] = Integer.valueOf(split[i]);
@@ -88,8 +89,9 @@ public class MusicScore implements Serializable {
     }
 
     @Nullable
-    public static MusicScore convertToStandard(String name, String homophony, String content) {
+    public static MusicScore convertToObj(String name, String homophony, String content) {
         try {
+            content = convertToStandard(content);
             char[] chars = content.toCharArray();
             int[] temp = new int[content.length()];
             int line = 1;
@@ -153,6 +155,39 @@ public class MusicScore implements Serializable {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private static String convertToStandard(String content) {
+        content = content.replace("（", "(").replace("）", ")")
+                .replace("【", "[").replace("】", "]");
+
+        Pattern pattern = Pattern.compile("(\\(.*?\\))");
+        Matcher matcher = pattern.matcher(content);
+        while (matcher.find()) {
+            String str = matcher.group(1);
+            System.out.println(str);
+            str = str.replaceAll("([#,b]?\\d)", "($1)");
+            str = str.substring(1, str.length() - 1);
+            System.out.println(str);
+            content = content.replace(matcher.group(1), str);
+        }
+
+        pattern = Pattern.compile("(\\[.*?])");
+        matcher = pattern.matcher(content);
+        while (matcher.find()) {
+            String str = matcher.group(1);
+            System.out.println(str);
+            str = str.replaceAll("([#,b]?\\d)", "[$1]");
+            str = str.substring(1, str.length() - 1);
+            System.out.println(str);
+            content = content.replace(matcher.group(1), str);
+        }
+
+        System.out.println("process [] : " + content);
+
+        content = content.replace("X2", "\n");
+
+        return content;
     }
 
     private static final String TAG = "MusicScore";
@@ -238,5 +273,14 @@ public class MusicScore implements Serializable {
         this.notesLen = score.getNotesLen();
         this.musicNotes = score.getMusicNotes();
         return this;
+    }
+
+    public void printNotes() {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < notesLen; i++) {
+            builder.append(MusicNote.toString(musicNotes[i]));
+            builder.append(" ");
+        }
+        System.out.println("printNotes: " + builder.toString());
     }
 }
